@@ -13,11 +13,11 @@ This script performs cleanup operations to remove temporary files and directorie
 ---
 ### Installation
 
-1.  Clone the repository:
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/your-username/your-repo.git
-2.  pip install psutil
+2. pip install psutil
 
 ---
 ### **Usage**
