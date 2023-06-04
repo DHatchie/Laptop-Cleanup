@@ -1,8 +1,21 @@
+"""
+File Cleanup and PC Health Check Script
+
+This script performs cleanup of temporary files and directories in the system's temporary folder,
+and also performs a health check of the PC by checking CPU, memory, and disk usage.
+
+For more info: [README.md]
+
+Author: [https://github.com/DHatchie]
+Date: [06/04/2023]
+"""
+
 import os
 import shutil
 import datetime
 import sys
 import itertools
+
 import psutil
 
 # ANSI escape sequences for text formatting
@@ -15,6 +28,9 @@ RESET = "\033[0m"
 LOG_FOLDER = "cleanup_logs"
 
 def cleanup_temporary_files():
+    """
+    Cleans up temporary files from the system.
+    """
     temp_folder = os.environ.get('TEMP')
     log_file = os.path.join(LOG_FOLDER, "cleanup_log.txt")
     failed_log_file = os.path.join(LOG_FOLDER, "failed_delete_log.txt")
@@ -29,15 +45,16 @@ def cleanup_temporary_files():
             d.write(f"\n[[ Failed to Delete Files Log ]] - {current_time}\n\n")
 
             deleted_files = 0
-            deleted_dirs = 0
             total_files = 0
 
+            # Count total number of files
             for root, dirs, files in os.walk(temp_folder):
                 total_files += len(files)
 
             print("Cleanup in progress - Files...")
             animation = itertools.cycle(["|", "/", "-", "\\"])
 
+            # Delete each file and update progress animation
             for root, dirs, files in os.walk(temp_folder):
                 for file in files:
                     file_path = os.path.join(root, file)
@@ -58,6 +75,9 @@ def cleanup_temporary_files():
 
 
 def cleanup_temporary_directories():
+    """
+    Cleans up temporary directories from the system.
+    """
     temp_folder = os.environ.get('TEMP')
     log_file = os.path.join(LOG_FOLDER, "cleanup_log.txt")
     failed_log_file = os.path.join(LOG_FOLDER, "failed_delete_log.txt")
@@ -73,6 +93,7 @@ def cleanup_temporary_directories():
             print("Cleanup in progress - Directories...")
             animation = itertools.cycle(["|", "/", "-", "\\"])
 
+            # Delete each directory and update progress animation
             for root, dirs, files in os.walk(temp_folder):
                 for dir in dirs:
                     dir_path = os.path.join(root, dir)
@@ -93,11 +114,17 @@ def cleanup_temporary_directories():
 
 
 def cleanup_temporary():
+    """
+    Performs cleanup of temporary files and directories.
+    """
     cleanup_temporary_files()
     cleanup_temporary_directories()
 
 
 def pc_health_check():
+    """
+    Performs a health check of the PC.
+    """
     cpu_usage = psutil.cpu_percent(interval=1)
     memory_usage = psutil.virtual_memory().percent
     disk_usage = psutil.disk_usage(os.getcwd()).percent
