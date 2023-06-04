@@ -1,62 +1,113 @@
-# | hatcherdc | laptop cleanup | /cleanup.py |
 import os
-import subprocess
+import shutil
+import datetime
+import sys
+import itertools
+import psutil
 
-def delete_temp_files():
-    files_deleted = 0
+# ANSI escape sequences for text formatting
+GREEN = "\033[32m"
+RED = "\033[31m"
+YELLOW = "\033[33m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
+
+LOG_FOLDER = "cleanup_logs"
+
+def cleanup_temporary_files():
     temp_folder = os.environ.get('TEMP')
-    for root, dirs, files in os.walk(temp_folder):
-        for file in files:
-            file_path = os.path.join(root, file)
-            try:
-                os.remove(file_path)
-                files_deleted += 1
-                print(f"Deleted:  {file_path}")
-            except Exception as e:
-                print(f"Failed to delete:  {file_path} ({str(e)})")
-    return files_deleted
+    log_file = os.path.join(LOG_FOLDER, "cleanup_log.txt")
+    failed_log_file = os.path.join(LOG_FOLDER, "failed_delete_log.txt")
 
-def delete_empty_directories():
-    dirs_deleted = 0
-    root_folder = os.path.expanduser("~")
-    for root, dirs, files in os.walk(root_folder, topdown=False):
-        for dir in dirs:
-            dir_path = os.path.join(root, dir)
-            try:
-                os.rmdir(dir_path)
-                dirs_deleted += 1
-                print(f"Deleted:  {dir_path}")
-            except Exception as e:
-                print(f"Failed to delete:  {dir_path} ({str(e)})")
-    return dirs_deleted
+    # Create or open the log file in append mode
+    os.makedirs(LOG_FOLDER, exist_ok=True)
 
-def print_num_results(files_deleted, dirs_deleted):
-    print(f"\nFiles deleted: {files_deleted}\nEmpty Directories deleted: {dirs_deleted}\n")
+    with open(log_file, 'a') as f:
+        with open(failed_log_file, 'a') as d:
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"[[ Cleanup Files Log ]] - {current_time}\n\n")
+            d.write(f"\n[[ Failed to Delete Files Log ]] - {current_time}\n\n")
 
-def manage_startup_programs():
-    startup_folder = os.path.join(os.environ.get('APPDATA'), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
-    startup_items = os.listdir(startup_folder)
-    print("Startup Programs:")
-    for item in startup_items:
-        print(item)
+            deleted_files = 0
+            deleted_dirs = 0
+            total_files = 0
 
-def empty_recycle_bin():
+            for root, dirs, files in os.walk(temp_folder):
+                total_files += len(files)
+
+            print("Cleanup in progress - Files...")
+            animation = itertools.cycle(["|", "/", "-", "\\"])
+
+            for root, dirs, files in os.walk(temp_folder):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    try:
+                        os.remove(file_path)
+                        f.write(f"Deleted File: {file_path}\n")
+                        deleted_files += 1
+                    except Exception as e:
+                        d.write(f"Failed to delete File: {file_path} ({str(e)})\n")
+
+                    # Update the progress animation
+                    sys.stdout.write(f"\r{GREEN}{next(animation)}{RESET}")
+                    sys.stdout.flush()
+
+            sys.stdout.write("\r")
+            print("File cleanup completed.")
+            print(f"{BOLD}Deleted Files: {deleted_files}{RESET}\n")
+
+
+def cleanup_temporary_directories():
     temp_folder = os.environ.get('TEMP')
-    recycle_bin_path = os.path.join(temp_folder, "..",  "Recycle.Bin")
-    try:
-        subprocess.run(['cmd', '/c', 'rd', '/s', '/q', recycle_bin_path], check=True)
-        print("Emptied the recycling bin!")
-    except subprocess.CalledProcessError as e:
-        stderr = e.stderr
-        error_msg = stderr.decode() if stderr is not None else "Unknown Error"
-        print(f"Failed to empty recycle bin ({error_msg})")
+    log_file = os.path.join(LOG_FOLDER, "cleanup_log.txt")
+    failed_log_file = os.path.join(LOG_FOLDER, "failed_delete_log.txt")
 
-def driver():
-    files_deleted = delete_temp_files()
-    dirs_deleted = delete_empty_directories()
-    print_num_results(files_deleted, dirs_deleted)
-    manage_startup_programs()
-    empty_recycle_bin()
+    # Create or open the log file in append mode
+    with open(log_file, 'a') as f:
+        with open(failed_log_file, 'a') as d:
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"[[ Cleanup Directories Log ]] - {current_time}\n\n")
+            d.write(f"\n[[ Failed to Delete Directories Log ]] - {current_time}\n\n")
+            deleted_dirs = 0
+
+            print("Cleanup in progress - Directories...")
+            animation = itertools.cycle(["|", "/", "-", "\\"])
+
+            for root, dirs, files in os.walk(temp_folder):
+                for dir in dirs:
+                    dir_path = os.path.join(root, dir)
+                    try:
+                        shutil.rmtree(dir_path)
+                        f.write(f"Deleted Directory: {dir_path}\n")
+                        deleted_dirs += 1
+                    except Exception as e:
+                        d.write(f"Failed to delete Directory: {dir_path} ({str(e)})\n")
+
+                    # Update the progress animation
+                    sys.stdout.write(f"\r{GREEN}{next(animation)}{RESET}")
+                    sys.stdout.flush()
+
+            sys.stdout.write("\r")
+            print("Directory cleanup completed.")
+            print(f"{BOLD}Deleted Directories: {deleted_dirs}{RESET}")
+
+
+def cleanup_temporary():
+    cleanup_temporary_files()
+    cleanup_temporary_directories()
+
+
+def pc_health_check():
+    cpu_usage = psutil.cpu_percent(interval=1)
+    memory_usage = psutil.virtual_memory().percent
+    disk_usage = psutil.disk_usage(os.getcwd()).percent
+
+    print(f"\n{BOLD}PC Health Check:{RESET}")
+    print(f"CPU Usage: {YELLOW}{cpu_usage}%{RESET}")
+    print(f"Memory Usage: {YELLOW}{memory_usage}%{RESET}")
+    print(f"Disk Usage: {YELLOW}{disk_usage}%{RESET}\n")
+
 
 if __name__ == "__main__":
-    driver()
+    cleanup_temporary()
+    pc_health_check()
