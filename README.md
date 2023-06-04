@@ -46,6 +46,6 @@ The cleanup script generates the following log files in the specified **`LOG_FOL
 
 ---
 ### **License**
-This project is licensed under the MIT License - see the **[LICENSE](https://www.example.com)** file for details.
+This project is licensed under the Apache License 2.0 License - see the **[LICENSE](https://github.com/DHatchie/LaptopCleanup/blob/main/LICENSE)** file for details.
 
 ---
