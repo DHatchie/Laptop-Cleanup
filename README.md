@@ -17,7 +17,7 @@ This script performs cleanup operations to remove temporary files and directorie
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/your-repo.git
+   git clone https://github.com/your-username/LaptopCleanup.git
 2. pip install psutil
 
 ---
