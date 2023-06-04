@@ -3,7 +3,8 @@
 This script performs cleanup operations to remove temporary files and directories from the system.
 
 ---
-## **Getting Started**
+
+## **Getting Started:**
 
 
 ### Prerequisites
