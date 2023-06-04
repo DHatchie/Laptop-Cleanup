@@ -15,6 +15,7 @@ import shutil
 import datetime
 import sys
 import itertools
+import tempfile
 
 import psutil
 
@@ -31,7 +32,7 @@ def cleanup_temporary_files():
     """
     Cleans up temporary files from the system.
     """
-    temp_folder = os.environ.get('TEMP')
+    temp_folder = tempfile.mkdtemp()
     log_file = os.path.join(LOG_FOLDER, "cleanup_log.txt")
     failed_log_file = os.path.join(LOG_FOLDER, "failed_delete_log.txt")
 
@@ -69,6 +70,10 @@ def cleanup_temporary_files():
                     sys.stdout.write(f"\r{GREEN}{next(animation)}{RESET}")
                     sys.stdout.flush()
 
+            # Update security on log files
+            os.chmod(log_file, 0o600)
+            os.chmod(failed_log_file, 0o600)
+
             sys.stdout.write("\r")
             print("File cleanup completed.")
             print(f"{BOLD}Deleted Files: {deleted_files}{RESET}\n")
@@ -78,7 +83,7 @@ def cleanup_temporary_directories():
     """
     Cleans up temporary directories from the system.
     """
-    temp_folder = os.environ.get('TEMP')
+    temp_folder = tempfile.mkdtemp()
     log_file = os.path.join(LOG_FOLDER, "cleanup_log.txt")
     failed_log_file = os.path.join(LOG_FOLDER, "failed_delete_log.txt")
 
@@ -108,6 +113,10 @@ def cleanup_temporary_directories():
                     sys.stdout.write(f"\r{GREEN}{next(animation)}{RESET}")
                     sys.stdout.flush()
 
+            # Update security on log files
+            os.chmod(log_file, 0o600)
+            os.chmod(failed_log_file, 0o600)
+
             sys.stdout.write("\r")
             print("Directory cleanup completed.")
             print(f"{BOLD}Deleted Directories: {deleted_dirs}{RESET}")
@@ -119,6 +128,7 @@ def cleanup_temporary():
     """
     cleanup_temporary_files()
     cleanup_temporary_directories()
+    os.chmod(LOG_FOLDER, 0o600)
 
 
 def pc_health_check():
