@@ -1,9 +1,23 @@
+"""
+File Cleanup and PC Health Check Script
+
+This script performs cleanup of temporary files and directories in the system's temporary folder,
+and also performs a health check of the PC by checking CPU, memory, and disk usage.
+
+For more info: [README.md]
+
+Author: [https://github.com/DHatchie]
+Date: [06/04/2023]
+"""
+
 import os
 import shutil
 import datetime
 import sys
 import itertools
 import tempfile
+
+import psutil
 
 # ANSI escape sequences for text formatting
 GREEN = "\033[32m"
@@ -16,7 +30,7 @@ LOG_FOLDER = "cleanup_logs"
 
 def cleanup_temporary_files():
     """
-    Cleans up temporary files from the system's temporary folder.
+    Cleans up temporary files from the system.
     """
     temp_folder = tempfile.gettempdir()
     log_file = os.path.join(LOG_FOLDER, "cleanup_log.txt")
@@ -42,7 +56,7 @@ def cleanup_temporary_files():
             animation = itertools.cycle(["|", "/", "-", "\\"])
 
             # Delete each file and update progress animation
-            for root, dirs, files in os.walk(temp_folder):
+            for root, dirs, files in os.walk(temp_folder, topdown=False):
                 for file in files:
                     file_path = os.path.join(root, file)
                     try:
@@ -67,7 +81,7 @@ def cleanup_temporary_files():
 
 def cleanup_temporary_directories():
     """
-    Cleans up temporary directories from the system's temporary folder.
+    Cleans up temporary directories from the system.
     """
     temp_folder = tempfile.gettempdir()
     log_file = os.path.join(LOG_FOLDER, "cleanup_log.txt")
@@ -121,8 +135,14 @@ def pc_health_check():
     """
     Performs a health check of the PC.
     """
-    # Health check implementation (CPU, memory, disk usage)
-    pass
+    cpu_usage = psutil.cpu_percent(interval=1)
+    memory_usage = psutil.virtual_memory().percent
+    disk_usage = psutil.disk_usage(os.getcwd()).percent
+
+    print(f"\n{BOLD}PC Health Check:{RESET}")
+    print(f"CPU Usage: {YELLOW}{cpu_usage}%{RESET}")
+    print(f"Memory Usage: {YELLOW}{memory_usage}%{RESET}")
+    print(f"Disk Usage: {YELLOW}{disk_usage}%{RESET}\n")
 
 
 if __name__ == "__main__":
